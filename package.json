@@ -1,0 +1,50 @@
+{
+  "name": "meshblu-core-task-reset-token",
+  "version": "1.0.0",
+  "description": "Meshblu core task meshblu-core-task-reset-token",
+  "keywords": [
+    "meshblu",
+    "core",
+    "iot",
+    "task"
+  ],
+  "homepage": "https://github.com/octoblu/meshblu-core-task-reset-token",
+  "bugs": "https://github.com/octoblu/meshblu-core-task-reset-token/issues",
+  "author": {
+    "name": "Octoblu",
+    "url": "https://github.com/octoblu"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/octoblu/meshblu-core-task-reset-token.git"
+  },
+  "scripts": {
+    "test": "istanbul cover _mocha -- -R spec --require coffee-coverage/register-istanbul"
+  },
+  "dependencies": {
+    "coffee-script": "^1.10.0",
+    "lodash": "^4.6.1",
+    "meshblu-core-manager-device": "^1.6.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "coffee-coverage": "^0.7.0",
+    "coffee-script": "^1.10.0",
+    "fakeredis": "^1.0.2",
+    "istanbul": "^0.4.2",
+    "meshblu-core-cache": "^1.5.0",
+    "meshblu-core-datastore": "^2.4.0",
+    "mocha": "^2.4.5",
+    "mocha-istanbul": "^0.2.0",
+    "mongojs": "^2.3.0",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=5.0.0",
+    "npm": ">=2.10.0"
+  },
+  "license": "MIT"
+}
