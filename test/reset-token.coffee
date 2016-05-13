@@ -9,11 +9,12 @@ ResetToken = require '../'
 describe 'ResetToken', ->
   beforeEach (done) ->
     @uuidAliasResolver = resolve: (uuid, callback) => callback null, uuid
+    database = mongojs 'reset-token-manager-test', ['devices']
     @datastore = new Datastore
-      database: mongojs 'reset-token-manager-test'
+      database: database
       collection: 'devices'
 
-    @datastore.remove done
+    database.devices.remove done
 
   beforeEach ->
     @cache = new Cache client: redis.createClient uuid.v1()
@@ -49,7 +50,7 @@ describe 'ResetToken', ->
       it 'should create the token in the cache', (done) ->
         @datastore.findOne {uuid: @response.data.uuid}, (error, device) =>
           return done error if error?
-          @cache.exists "meshblu-token-cache:#{device.uuid}:#{device.token}", (error, result) =>
+          @cache.exists "#{device.uuid}:#{device.token}", (error, result) =>
             return done error if error?
             expect(result).to.be.true
             done()
