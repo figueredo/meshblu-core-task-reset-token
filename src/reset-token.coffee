@@ -1,12 +1,13 @@
 _             = require 'lodash'
 http          = require 'http'
-DeviceManager = require 'meshblu-core-manager-device'
+TokenManager  = require 'meshblu-core-manager-token'
 
 class ResetToken
-  constructor: ({@cache,uuidAliasResolver,@datastore}) ->
+  constructor: ({@datastore,@cache,@pepper,uuidAliasResolver}) ->
     throw new Error "Missing mandatory @cache option" unless @cache?
     throw new Error "Missing mandatory @datastore option" unless @datastore?
-    @deviceManager = new DeviceManager {@cache, @datastore, uuidAliasResolver}
+    throw new Error "Missing mandatory @pepper option" unless @pepper?
+    @tokenManager = new TokenManager {@datastore,@cache,@pepper,uuidAliasResolver}
 
   _doCallback: (request, code, device, callback) =>
     response =
@@ -20,8 +21,8 @@ class ResetToken
   do: (request, callback) =>
     {metadata} = request
     uuid = metadata.toUuid ? metadata.auth?.uuid
-    @deviceManager.resetRootToken {uuid}, (error, device) =>
+    @tokenManager.generateAndStoreRootToken {uuid}, (error, token) =>
       return callback error if error?
-      return @_doCallback request, 200, device, callback
+      @_doCallback request, 200, { uuid, token }, callback
 
 module.exports = ResetToken
