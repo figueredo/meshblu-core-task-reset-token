@@ -1,11 +1,8 @@
-_              = require 'lodash'
-mongojs        = require 'mongojs'
-Datastore      = require 'meshblu-core-datastore'
-Cache          = require 'meshblu-core-cache'
-TokenManager   = require 'meshblu-core-manager-token'
-redis          = require 'fakeredis'
-uuid           = require 'uuid'
-ResetToken = require '../'
+_                = require 'lodash'
+mongojs          = require 'mongojs'
+Datastore        = require 'meshblu-core-datastore'
+RootTokenManager = require 'meshblu-core-manager-root-token'
+ResetToken       = require '../'
 
 describe 'ResetToken', ->
   beforeEach (done) ->
@@ -17,13 +14,14 @@ describe 'ResetToken', ->
     database.tokens.remove done
 
   beforeEach ->
-    @cache = new Cache client: redis.createClient uuid.v1()
-    pepper = 'cheeseburger'
     uuidAliasResolver = resolve: (uuid, callback) => callback null, uuid
-    @tokenManager = new TokenManager {@datastore, @cache, pepper, uuidAliasResolver}
-    @sut = new ResetToken {@datastore, @cache, pepper, uuidAliasResolver}
+    @rootTokenManager = new RootTokenManager {@datastore, uuidAliasResolver}
+    @sut = new ResetToken {@datastore, uuidAliasResolver}
 
   describe '->do', ->
+    beforeEach (done) ->
+      @datastore.insert { uuid: 'electric-eels', token: 'old-token' }, done
+
     describe 'when given a valid request', ->
       beforeEach (done) ->
         request =
@@ -43,25 +41,14 @@ describe 'ResetToken', ->
         @datastore.findOne {uuid: 'electric-eels'}, (error, record) =>
           return done error if error?
           expect(record.uuid).to.equal 'electric-eels'
-          expect(record.hashedRootToken).to.exist
+          expect(record.token).to.not.equal 'old-token'
           done()
 
-      it 'should have a valid hashedRootToken', (done) ->
-        @datastore.findOne {uuid: 'electric-eels'}, (error, record) =>
-          return done error if error?
-          { token } = @response.data
-          @tokenManager.verifyToken { uuid: 'electric-eels', token }, (error, valid) =>
-            return callback error if error?
-            expect(valid).to.be.true
-            done()
-
-      it 'should create the token in the cache', (done) ->
-        @datastore.findOne {uuid: 'electric-eels'}, (error, record) =>
-          return done error if error?
-          @cache.exists "#{record.uuid}:#{record.hashedToken}", (error, result) =>
-            return done error if error?
-            expect(result).to.be.true
-            done()
+      it 'should have a valid token', (done) ->
+        @rootTokenManager.verifyToken { uuid: 'electric-eels', token: @response.data.token }, (error, valid) =>
+          return callback error if error?
+          expect(valid).to.be.true
+          done()
 
       it 'should return a 200', ->
         expectedResponseMetadata =

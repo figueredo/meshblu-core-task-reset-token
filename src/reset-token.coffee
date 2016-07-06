@@ -1,13 +1,11 @@
-_             = require 'lodash'
-http          = require 'http'
-TokenManager  = require 'meshblu-core-manager-token'
+_                = require 'lodash'
+http             = require 'http'
+RootTokenManager = require 'meshblu-core-manager-root-token'
 
 class ResetToken
-  constructor: ({@datastore,@cache,@pepper,uuidAliasResolver}) ->
-    throw new Error "Missing mandatory @cache option" unless @cache?
-    throw new Error "Missing mandatory @datastore option" unless @datastore?
-    throw new Error "Missing mandatory @pepper option" unless @pepper?
-    @tokenManager = new TokenManager {@datastore,@cache,@pepper,uuidAliasResolver}
+  constructor: ({ datastore, uuidAliasResolver }) ->
+    throw new Error "Missing mandatory @datastore option" unless datastore?
+    @rootTokenManager = new RootTokenManager { datastore, uuidAliasResolver }
 
   _doCallback: (request, code, device, callback) =>
     response =
@@ -21,7 +19,7 @@ class ResetToken
   do: (request, callback) =>
     {metadata} = request
     uuid = metadata.toUuid ? metadata.auth?.uuid
-    @tokenManager.generateAndStoreRootToken {uuid}, (error, token) =>
+    @rootTokenManager.generateAndStoreToken { uuid }, (error, token) =>
       return callback error if error?
       @_doCallback request, 200, { uuid, token }, callback
 
